@@ -29,44 +29,81 @@
  *******************************************************************************/
 
 /*
- * robotis_trajectory_calculator.h
+ * simple_trapezoidal_velocity_profile.h
  *
- *  Created on: June 7, 2016
- *      Author: sch
+ *  Created on: 2016. 8. 24.
+ *      Author: Jay Song
  */
 
-#ifndef ROBOTIS_MATH_ROBOTIS_TRAJECTORY_CALCULATOR_H_
-#define ROBOTIS_MATH_ROBOTIS_TRAJECTORY_CALCULATOR_H_
+#ifndef ROBOTIS_MATH_TRAPEZOIDAL_VELOCITY_PROFILE_H_
+#define ROBOTIS_MATH_TRAPEZOIDAL_VELOCITY_PROFILE_H_
 
 #define EIGEN_NO_DEBUG
 #define EIGEN_NO_STATIC_ASSERT
 
 #include "robotis_linear_algebra.h"
 #include "robotis_math_base.h"
-#include "fifth_order_polynomial_trajectory.h"
-#include "simple_trapezoidal_velocity_profile.h"
 
 namespace robotis_framework
 {
-// minimum jerk trajectory
-Eigen::MatrixXd calcMinimumJerkTra(double pos_start, double vel_start, double accel_start,
-                                   double pos_end,   double vel_end,   double accel_end,
-                                   double smp_time,  double mov_time);
+class SimpleTrapezoidalVelocityProfile
+{
+public:
+  SimpleTrapezoidalVelocityProfile();
+  ~SimpleTrapezoidalVelocityProfile();
 
-Eigen::MatrixXd calcMinimumJerkTraPlus(double pos_start, double vel_start, double accel_start,
-                                       double pos_end,   double vel_end,   double accel_end,
-                                       double smp_time,  double mov_time);
+  void setVelocityBaseTrajectory(double init_pos, double final_pos, double acceleration, double max_velocity);
+  void setVelocityBaseTrajectory(double init_pos, double final_pos, double acceleration, double deceleration, double max_velocity);
+  void setTimeBaseTrajectory(double init_pos, double final_pos, double accel_time, double total_time);
+  void setTimeBaseTrajectory(double init_pos, double final_pos, double accel_time, double decel_time, double total_time);
 
-Eigen::MatrixXd calcMinimumJerkTraWithViaPoints(int via_num,
-                                                double pos_start, double vel_start, double accel_start,
-                                                Eigen::MatrixXd pos_via,  Eigen::MatrixXd vel_via, Eigen::MatrixXd accel_via,
-                                                double pos_end, double vel_end, double accel_end,
-                                                double smp_time, Eigen::MatrixXd via_time, double mov_time);
+  double getPosition(double time);
+  double getVelocity(double time);
+  double getAcceleration(double time);
 
-Eigen::MatrixXd calcArc3dTra(double smp_time, double mov_time,
-                             Eigen::MatrixXd center_point, Eigen::MatrixXd normal_vector, Eigen::MatrixXd start_point,
-                             double rotation_angle, double cross_ratio);
+  void setTime(double time);
+  double getPosition();
+  double getVelocity();
+  double getAcceleration();
+
+  double getTotalTime();
+  double getConstantVelocitySectionStartTime();
+  double getDecelerationSectionStartTime();
+
+private:
+  Eigen::MatrixXd pos_coeff_accel_section_;
+  Eigen::MatrixXd vel_coeff_accel_section_;
+
+  Eigen::MatrixXd pos_coeff_const_section_;
+  Eigen::MatrixXd vel_coeff_const_section_;
+
+  Eigen::MatrixXd pos_coeff_decel_section_;
+  Eigen::MatrixXd vel_coeff_decel_section_;
+
+  Eigen::MatrixXd time_variables_;
+
+  double acceleration_;
+  double deceleration_;
+  double max_velocity_;
+
+  double initial_pos_;
+
+  double current_time_;
+  double current_pos_;
+  double current_vel_;
+  double current_acc_;
+
+  double final_pos_;
+
+  double accel_time_;
+  double const_time_;
+  double decel_time_;
+
+  double const_start_time_;
+  double decel_start_time_;
+  double total_time_;
+};
 
 }
 
-#endif /* ROBOTIS_MATH_ROBOTIS_TRAJECTORY_CALCULATOR_H_ */
+#endif /* ROBOTIS_MATH_TRAPEZOIDAL_VELOCITY_PROFILE_H_ */
